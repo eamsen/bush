@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <unordered_set>
-#include <limits>
 #include "./clock.h"
 #include "./profiler.h"
 #include "./parser.h"
@@ -13,7 +12,6 @@ using std::cout;
 using std::string;
 using std::unordered_set;
 using std::vector;
-using std::numeric_limits;
 using base::Clock;
 using base::Profiler;
 using bush::Parser;
@@ -23,7 +21,7 @@ using bush::Vote;
 DEFINE_bool(verbose, false, "Verbose output");
 
 // Command-line flag for brief output.
-DEFINE_bool(brief, true, "Brief output");
+DEFINE_bool(brief, true, "Brief output, outputs only the vote result");
 
 // Command-line flag for execution time limit.
 DEFINE_int32(timelimit, 300, "Execution time limit in seconds");
