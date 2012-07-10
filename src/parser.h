@@ -1,0 +1,54 @@
+// Copyright 2012 Eugen Sawin <sawine@me73.com>
+#ifndef SRC_PARSER_H_
+#define SRC_PARSER_H_
+
+#include <cassert>
+#include <vector>
+#include <set>
+#include <string>
+#include "./vote.h"
+
+namespace bush {
+
+class Parser {
+ public:
+  static const char* kNumbers;
+  static const char* kWhitespace;
+
+  // Converts a value from one type to another.
+  template<typename To, typename From>
+  static To Convert(const From& from) {
+    std::stringstream ss;
+    ss << from;
+    To to;
+    ss >> to;
+    return to;
+  }
+
+  // Returns the file size of given path in bytes.
+  static size_t FileSize(const std::string& path);
+
+  static void CollectNumerals(const std::string& content,
+                              std::vector<int>* numerals);
+
+  // Splits the given string at whitespaces.
+  static std::vector<std::string> Split(const std::string& content);
+
+  // Strips all whitespace characters at beginning and end of given string.
+  static std::string StripWhitespace(const std::string& content);
+
+  // Initialised the parser with given path.
+  explicit Parser(const std::string& path);
+
+  Vote ParseVote();
+
+ private:
+  // Reads the whole file into parser cache.
+  void ReadAll();
+
+  std::string path_;
+  std::string content_;
+};
+
+}  // namespace bush
+#endif  // SRC_PARSER_H_
