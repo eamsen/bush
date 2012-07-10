@@ -3,6 +3,7 @@
 #define SRC_VOTE_H_
 
 #include <vector>
+#include <string>
 
 namespace bush {
 
@@ -10,8 +11,10 @@ class Vote {
  public:
   Vote(const int num_candidates, const int num_voters);
   void AddPreference(const int voter_id, const std::vector<int>& pref);
+  void AddPreference(const int voter_id, std::vector<int>&& pref);
   int num_candidates() const;
   int num_voters() const;
+  std::string str() const;
 
  private:
   std::vector<std::vector<int> > preferences_;

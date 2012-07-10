@@ -2,7 +2,6 @@
 #ifndef SRC_PARSER_H_
 #define SRC_PARSER_H_
 
-#include <cassert>
 #include <vector>
 #include <set>
 #include <string>
@@ -28,18 +27,13 @@ class Parser {
   // Returns the file size of given path in bytes.
   static size_t FileSize(const std::string& path);
 
-  static void CollectNumerals(const std::string& content,
-                              std::vector<int>* numerals);
-
-  // Splits the given string at whitespaces.
-  static std::vector<std::string> Split(const std::string& content);
-
-  // Strips all whitespace characters at beginning and end of given string.
-  static std::string StripWhitespace(const std::string& content);
+  // Splits the given string at whitespaces and converts elements to int.
+  static std::vector<int> SplitInts(const std::string& content);
 
   // Initialised the parser with given path.
   explicit Parser(const std::string& path);
 
+  // Parses a vote file and returns its representative data structure.
   Vote ParseVote();
 
  private:

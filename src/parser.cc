@@ -13,7 +13,7 @@ using std::min;
 
 namespace bush {
 
-const char* Parser::kNumbers = "-0123456789";
+const char* Parser::kNumbers = "0123456789";
 const char* Parser::kWhitespace = "\n\r\t ";
 
 size_t Parser::FileSize(const string& path) {
@@ -28,44 +28,21 @@ size_t Parser::FileSize(const string& path) {
   return size;
 }
 
-void Parser::CollectNumerals(const string& content, vector<int>* numerals) {
-  assert(numerals);
-  size_t pos = content.find_first_of(kNumbers);
-  while (pos != string::npos) {
-    size_t end = content.find_first_not_of(kNumbers, pos);
-    if (end == string::npos) {
-      numerals->push_back(Convert<int>(content.substr(pos)));
-    } else {
-      numerals->push_back(Convert<int>(content.substr(pos, end - pos)));
-    }
-    pos = content.find_first_of(kNumbers, end);
-  }
-}
-
-vector<string> Parser::Split(const string& content) {
-  vector<string> items;
+vector<int> Parser::SplitInts(const string& content) {
+  vector<int> items;
   size_t pos = content.find_first_not_of(kWhitespace);
   while (pos != string::npos) {
     size_t end = content.find_first_of(kWhitespace, pos);
     if (end == string::npos) {
       // Last item found.
-      items.push_back(content.substr(pos));
+      items.push_back(Convert<int>(content.substr(pos)));
     } else {
       // Item found.
-      items.push_back(content.substr(pos, end - pos));
+      items.push_back(Convert<int>(content.substr(pos, end - pos)));
     }
     pos = content.find_first_not_of(kWhitespace, end);
   }
   return items;
-}
-
-string Parser::StripWhitespace(const string& content) {
-  size_t beg = content.find_first_not_of(kWhitespace);
-  size_t end = content.find_last_not_of(kWhitespace);
-  if (beg == end) {
-    return "";
-  }
-  return content.substr(beg, end - beg + 1);
 }
 
 Parser::Parser(const string& path)
@@ -76,12 +53,17 @@ Vote Parser::ParseVote() {
     ReadAll();
   }
   assert(content_.size());
-  vector<int> header;
   size_t pos = content_.find("\n");
   assert(pos != string::npos);
-  CollectNumerals(content_.substr(0, pos), &header);
+  vector<int> header = SplitInts(content_.substr(0, pos));
   assert(header.size() == 2);
   Vote vote(header[0], header[1]);
+  for (int i = 0; i < vote.num_voters(); ++i) {
+    size_t end = content_.find("\n", pos + 1);
+    assert(end != string::npos);
+    vote.AddPreference(i, SplitInts(content_.substr(pos, end - pos)));
+    pos = end;
+  }
   return vote;
 }
 
