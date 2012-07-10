@@ -9,6 +9,7 @@
 #include "./parser.h"
 #include "./vote.h"
 #include "./plurality-system.h"
+#include "./borda-system.h"
 
 using std::cout;
 using std::endl;
@@ -20,6 +21,7 @@ using base::Profiler;
 using bush::Parser;
 using bush::Vote;
 using bush::Plurality;
+using bush::Borda;
 
 // Command-line flag for verbose output.
 DEFINE_bool(verbose, false, "Verbose output");
@@ -79,6 +81,41 @@ int main(int argc, char* argv[]) {
   if (voting_system == "plurality") {
     // Plurality voting-system.
     Plurality system(vote, selected_voter_id);
+    if (FLAGS_verbose) {
+      cout << "Ratings: ";
+      const vector<int>& ratings = system.base_ratings();
+      for (auto it = ratings.cbegin(), end = ratings.cend();
+           it != end; ++it) {
+        if (it != ratings.cbegin()) {
+          cout << " ";
+        }
+        cout << *it;
+      }
+      cout << "\n";
+    }
+    const vector<int>& strategic_pref = system.strategic_preference();
+    for (auto it = strategic_pref.cbegin(), end = strategic_pref.cend();
+         it != end; ++it) {
+      if (it != strategic_pref.cbegin()) {
+        cout << " ";
+      }
+      cout << *it;
+    }
+  } else if (voting_system == "borda") {
+    // Borda count voting-system.
+    Borda system(vote, selected_voter_id);
+    if (FLAGS_verbose) {
+      cout << "Ratings: ";
+      const vector<int>& ratings = system.base_ratings();
+      for (auto it = ratings.cbegin(), end = ratings.cend();
+           it != end; ++it) {
+        if (it != ratings.cbegin()) {
+          cout << " ";
+        }
+        cout << *it;
+      }
+      cout << "\n";
+    }
     const vector<int>& strategic_pref = system.strategic_preference();
     for (auto it = strategic_pref.cbegin(), end = strategic_pref.cend();
          it != end; ++it) {
