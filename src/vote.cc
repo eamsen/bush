@@ -11,19 +11,32 @@ namespace bush {
 
 Vote::Vote(const int num_candidates, const int num_voters)
     : preferences_(num_voters),
+      ratings_(num_voters, vector<int>(num_candidates, 0)),
       num_candidates_(num_candidates),
       num_voters_(num_voters) {}
 
 void Vote::AddPreference(const int voter_id, const vector<int>& pref) {
   assert(voter_id >= 0 && voter_id < num_voters());
   assert(static_cast<int>(pref.size()) == num_candidates());
+  UpdateRatings(voter_id, pref);
   preferences_[voter_id] = pref;
 }
 
 void Vote::AddPreference(const int voter_id, vector<int>&& pref) {
   assert(voter_id >= 0 && voter_id < num_voters());
   assert(static_cast<int>(pref.size()) == num_candidates());
+  UpdateRatings(voter_id, pref);
   preferences_[voter_id].swap(pref);
+}
+
+const vector<int>& Vote::preference(const int voter_id) const {
+  assert(voter_id >= 0 && voter_id < num_voters());
+  return preferences_[voter_id];
+}
+
+const vector<int>& Vote::ratings(const int voter_id) const {
+  assert(voter_id >= 0 && voter_id < num_voters());
+  return ratings_[voter_id];
 }
 
 int Vote::num_candidates() const {
@@ -50,6 +63,15 @@ string Vote::str() const {
     ss << "\n";
   }
   return ss.str();
+}
+
+void Vote::UpdateRatings(const int voter_id, const vector<int>& pref) {
+  assert(voter_id >= 0 && voter_id < num_voters());
+  assert(static_cast<int>(pref.size()) == num_candidates());
+  vector<int>& ratings = ratings_[voter_id];
+  for (int i = 0; i < num_candidates_; ++i) {
+    ratings[pref[i]] += num_candidates_ - i - 1;
+  }
 }
 
 }  // namespace bush

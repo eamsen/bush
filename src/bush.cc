@@ -7,8 +7,11 @@
 #include "./clock.h"
 #include "./profiler.h"
 #include "./parser.h"
+#include "./vote.h"
+#include "./plurality-system.h"
 
 using std::cout;
+using std::endl;
 using std::string;
 using std::unordered_set;
 using std::vector;
@@ -16,12 +19,13 @@ using base::Clock;
 using base::Profiler;
 using bush::Parser;
 using bush::Vote;
+using bush::Plurality;
 
 // Command-line flag for verbose output.
 DEFINE_bool(verbose, false, "Verbose output");
 
 // Command-line flag for brief output.
-DEFINE_bool(brief, true, "Brief output, outputs only the vote result");
+DEFINE_bool(brief, true, "Brief output, outputs only the strategic preference");
 
 // Command-line flag for execution time limit.
 DEFINE_int32(timelimit, 300, "Execution time limit in seconds");
@@ -68,8 +72,22 @@ int main(int argc, char* argv[]) {
          << "Selected voter: " << selected_voter_id << "\n"
          << "Voting system: " << voting_system << "\n";
     if (FLAGS_verbose) {
-      cout << "Vote input:\n" << vote.str();
+      cout << "Vote input:\n" << vote.str() << "\n";
     }
   }
+ 
+  if (voting_system == "plurality") {
+    // Plurality voting-system.
+    Plurality system(vote, selected_voter_id);
+    const vector<int>& strategic_pref = system.strategic_preference();
+    for (auto it = strategic_pref.cbegin(), end = strategic_pref.cend();
+         it != end; ++it) {
+      if (it != strategic_pref.cbegin()) {
+        cout << " ";
+      }
+      cout << *it;
+    }
+  }
+  cout << endl;
   return 0;
 }
