@@ -4,18 +4,18 @@ by Eugen Sawin <sawine@me73.com>
 
 Requirements
 ------------
-  + POSIX.1b-compliant operating system (librt)
-  + GNU GCC 4.6 or newer
-  + GNU Make
-  + Python 2.7 or newer (only for style checking)
+  * POSIX.1b-compliant operating system (librt)
+  * GNU GCC 4.6 or newer
+  * GNU Make
+  * Python 2.7 or newer (only for style checking)
 
 
 Dependencies
 ------------
-  + gflags (included)
-  + cpplint (included, only required for style checking)
-  + gtest (not included, only required for testing)
-  + gperftools (not included, only required for profiling)
+  * gflags (included)
+  * cpplint (included, only required for style checking)
+  * gtest (not included, only required for testing)
+  * gperftools (not included, only required for profiling)
 
 
 Building gflags
@@ -32,7 +32,7 @@ Building Bush (depends on gflags)
   To build Bush use:
   $ make
 
-  For performance measuring use the more optimised version:
+  For performance tests use the more optimised version:
   $ make opt
 
 

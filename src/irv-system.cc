@@ -72,7 +72,7 @@ int Irv::FindWinner(const vector<int>& preference) const {
   for (int v = 0; v < num_voters; ++v) {
     if (v == selected_voter_) {
       prefs.push_back(preference);
-    } else { 
+    } else {
       prefs.push_back(vote_.preference(v));
     }
     reverse(prefs.back().begin(), prefs.back().end());
@@ -110,7 +110,7 @@ int Irv::FindWinner(const vector<int>& preference) const {
     }
     assert(min_candidate != kInvalidId);
     // Deactive the candidate with the least first preferences.
-    active[min_candidate] = false; 
+    active[min_candidate] = false;
   }
   return winner;
 }
@@ -121,7 +121,7 @@ const vector<int>& Irv::strategic_preference() const {
 
 
 int Irv::Utility(const vector<int>& pref) const {
-  return vote_.ratings(selected_voter_)[FindWinner(pref)]; 
+  return vote_.ratings(selected_voter_)[FindWinner(pref)];
 }
 
 }  // namespace bush

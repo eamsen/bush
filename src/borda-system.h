@@ -20,7 +20,7 @@ class Borda {
   const Vote& vote_;
   int selected_voter_;
   std::vector<int> base_ratings_;
-  std::vector<int> strategic_preference_; 
+  std::vector<int> strategic_preference_;
 };
 
 }  // namespace bush

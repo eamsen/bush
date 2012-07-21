@@ -25,7 +25,7 @@ class Irv {
 
   const Vote& vote_;
   int selected_voter_;
-  std::vector<int> strategic_preference_; 
+  std::vector<int> strategic_preference_;
   base::Clock::Diff time_limit_;
 };
 

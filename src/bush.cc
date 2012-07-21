@@ -1,9 +1,9 @@
 // Copyright 2012 Eugen Sawin <sawine@me73.com>
 #include <gflags/gflags.h>
+#include <unordered_set>
 #include <cassert>
 #include <iostream>
 #include <vector>
-#include <unordered_set>
 #include "./clock.h"
 #include "./profiler.h"
 #include "./parser.h"
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
       cout << "Vote input:\n" << vote.str() << "\n";
     }
   }
- 
+
   if (voting_system == "plurality") {
     // Plurality voting system.
     Plurality system(vote, selected_voter_id);

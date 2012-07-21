@@ -58,7 +58,7 @@ void Borda::Preprocess() {
   const int max_rating = ratings.back().first;
   const vector<int>& selected_voter_ratings = vote_.ratings(selected_voter_);
   // Find the best winner candidate.
-  int best_candidate = 0; 
+  int best_candidate = 0;
   int best_rating = 0;
   for (int i = 0; i < num_candidates; ++i) {
     const int rating = ratings[i].first;
