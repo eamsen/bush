@@ -32,6 +32,9 @@ profile: clean compile
 opt: CFLAGS=-Ofast -flto -mtune=native -DNDEBUG
 opt: clean compile
 
+debug: CFLAGS=-O0 -g
+debug: compile
+
 ARGS:=-verbose=false -brief=false
 LOG:=perf-results.txt
 perftest: opt

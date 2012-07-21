@@ -52,7 +52,7 @@ void Plurality::Preprocess() {
     ++base_ratings_[candidate];
   }
   sort(ratings.begin(), ratings.end(), Compare());
-  const int max_rating = ratings[num_candidates - 1].first;
+  const int max_rating = ratings.back().first;
   const vector<int>& selected_voter_ratings = vote_.ratings(selected_voter_);
   Queue queue;
   for (int i = 0; i < num_candidates; ++i) {

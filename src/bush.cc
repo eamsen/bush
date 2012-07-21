@@ -10,6 +10,7 @@
 #include "./vote.h"
 #include "./plurality-system.h"
 #include "./borda-system.h"
+#include "./irv-system.h"
 
 using std::cout;
 using std::endl;
@@ -22,6 +23,7 @@ using bush::Parser;
 using bush::Vote;
 using bush::Plurality;
 using bush::Borda;
+using bush::Irv;
 
 // Command-line flag for verbose output.
 DEFINE_bool(verbose, false, "Verbose output");
@@ -37,7 +39,7 @@ const string kUsage =  // NOLINT
   string("Usage:\n") +
          "  $ bush <preferences> <voter id> <voting system>\n" +
          "  <preferences> is a preferences file in the vote format\n" +
-         "  <voter id> is the id (index) of the selected voter\n" +
+         "  <voter id> is the index of the selected voter\n" +
          "  <voting system> is one of these: plurality, irv, borda";
 
 int main(int argc, char* argv[]) {
@@ -79,7 +81,7 @@ int main(int argc, char* argv[]) {
   }
  
   if (voting_system == "plurality") {
-    // Plurality voting-system.
+    // Plurality voting system.
     Plurality system(vote, selected_voter_id);
     if (FLAGS_verbose) {
       cout << "Ratings: ";
@@ -102,7 +104,7 @@ int main(int argc, char* argv[]) {
       cout << *it;
     }
   } else if (voting_system == "borda") {
-    // Borda count voting-system.
+    // Borda count voting system.
     Borda system(vote, selected_voter_id);
     if (FLAGS_verbose) {
       cout << "Ratings: ";
@@ -116,6 +118,17 @@ int main(int argc, char* argv[]) {
       }
       cout << "\n";
     }
+    const vector<int>& strategic_pref = system.strategic_preference();
+    for (auto it = strategic_pref.cbegin(), end = strategic_pref.cend();
+         it != end; ++it) {
+      if (it != strategic_pref.cbegin()) {
+        cout << " ";
+      }
+      cout << *it;
+    }
+  } else if (voting_system == "irv") {
+    // Instant-runoff voting system.
+    Irv system(vote, selected_voter_id);
     const vector<int>& strategic_pref = system.strategic_preference();
     for (auto it = strategic_pref.cbegin(), end = strategic_pref.cend();
          it != end; ++it) {
