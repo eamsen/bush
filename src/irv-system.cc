@@ -33,47 +33,80 @@ struct Compare {
 
 const Clock::Diff Irv::kDefTimeLimit = 10 * Clock::kMicroInSec;
 
-Irv::Irv(const Vote& vote, const int selected_voter_id)
+Irv::Irv(const Vote& vote, const int selected_voter_id,
+         const VotingSystem::Strategy strategy)
     : vote_(vote),
       selected_voter_(selected_voter_id),
       time_limit_(kDefTimeLimit) {
-  Preprocess();
+  Preprocess(strategy);
 }
 
-void Irv::Preprocess() {
-  const Clock beg;
+void Irv::Preprocess(const VotingSystem::Strategy strategy) {
+  if (strategy == VotingSystem::kSingle) {
+    strategic_preference_ = FindStrategicPreference(vote_, selected_voter_,
+                                                    time_limit_);
+  } else if (strategy == VotingSystem::kFull) {
+    const Clock beg;
 
-  RandomGenerator<float> random(12);
-  const int num_candidates = vote_.num_candidates();
-  const int max_utility = num_candidates - 1;
-
-  strategic_preference_ = vote_.preference(selected_voter_);
-  vector<int> preference = vote_.preference(selected_voter_);
-  int best_utility = Utility(preference);
-
-  while (best_utility < max_utility && Clock() - beg < time_limit_) {
-    swap(preference[random.Next() * num_candidates],
-         preference[random.Next() * num_candidates]);
-    const int utility = Utility(preference);
-    if (utility > best_utility) {
-      best_utility = utility;
-      strategic_preference_.swap(preference);
+    const int num_voters = vote_.num_voters();
+    const Clock::Diff voter_time = time_limit_ / (2 + num_voters);
+    Vote strategic_vote(vote_.num_candidates(), num_voters);
+    strategic_vote.AddPreference(selected_voter_,
+                                 vote_.preference(selected_voter_));
+    for (int v = 0; v < num_voters; ++v) {
+      if (v == selected_voter_) {
+        continue;
+      }
+      strategic_vote.AddPreference(v, FindStrategicPreference(vote_, v,
+                                                              voter_time));
     }
+    const Clock::Diff rest_time = time_limit_ - (Clock() - beg);
+    strategic_preference_ = FindStrategicPreference(strategic_vote,
+                                                    selected_voter_,
+                                                    rest_time);
+  } else {
+    strategic_preference_ = vote_.preference(selected_voter_);
   }
 }
 
-int Irv::FindWinner(const vector<int>& preference) const {
+vector<int> Irv::FindStrategicPreference(const Vote& vote,
+                                         const int selected_voter,
+                                         const Clock::Diff time_limit) {
+  const Clock beg;
+
+  RandomGenerator<float> random(12);
+  const int num_candidates = vote.num_candidates();
+  const int max_utility = num_candidates - 1;
+
+  vector<int> strategic_preference = vote.preference(selected_voter);
+  vector<int> preference = vote.preference(selected_voter);
+  int best_utility = Utility(vote, selected_voter, preference);
+
+  while (best_utility < max_utility && Clock() - beg < time_limit) {
+    swap(preference[random.Next() * num_candidates],
+         preference[random.Next() * num_candidates]);
+    const int utility = Utility(vote, selected_voter, preference);
+    if (utility > best_utility) {
+      best_utility = utility;
+      strategic_preference.swap(preference);
+    }
+  }
+  return strategic_preference;
+}
+
+int Irv::FindWinner(const Vote& vote, const int selected_voter,
+                    const vector<int>& preference) {
   static const int kInvalidId = -1;
 
-  const int num_voters = vote_.num_voters();
-  const int num_candidates = vote_.num_candidates();
+  const int num_voters = vote.num_voters();
+  const int num_candidates = vote.num_candidates();
   vector<vector<int> > prefs;
   prefs.reserve(num_voters);
   for (int v = 0; v < num_voters; ++v) {
-    if (v == selected_voter_) {
+    if (v == selected_voter) {
       prefs.push_back(preference);
     } else {
-      prefs.push_back(vote_.preference(v));
+      prefs.push_back(vote.preference(v));
     }
     reverse(prefs.back().begin(), prefs.back().end());
   }
@@ -120,8 +153,9 @@ const vector<int>& Irv::strategic_preference() const {
 }
 
 
-int Irv::Utility(const vector<int>& pref) const {
-  return vote_.ratings(selected_voter_)[FindWinner(pref)];
+int Irv::Utility(const Vote& vote, const int selected_voter,
+                 const vector<int>& pref) {
+  return vote.ratings(selected_voter)[FindWinner(vote, selected_voter, pref)];
 }
 
 }  // namespace bush

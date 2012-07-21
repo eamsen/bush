@@ -3,6 +3,7 @@
 #define SRC_BORDA_SYSTEM_H_
 
 #include <vector>
+#include "./voting-system.h"
 
 namespace bush {
 
@@ -10,13 +11,15 @@ class Vote;
 
 class Borda {
  public:
-  Borda(const Vote& vote, const int selected_voter_id);
+  Borda(const Vote& vote, const int selected_voter_id,
+        const VotingSystem::Strategy strategy);
   const std::vector<int>& base_ratings() const;
   const std::vector<int>& strategic_preference() const;
 
  private:
-  void Preprocess();
-
+  void Preprocess(const VotingSystem::Strategy strategy);
+  static std::vector<int> FindStrategicPreference(const Vote& vote,
+                                                  const int selected_voter);
   const Vote& vote_;
   int selected_voter_;
   std::vector<int> base_ratings_;

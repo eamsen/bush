@@ -1,6 +1,7 @@
 // Copyright 2012 Eugen Sawin <sawine@me73.com>
 #include <gflags/gflags.h>
 #include <unordered_set>
+#include <unordered_map>
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -8,6 +9,7 @@
 #include "./profiler.h"
 #include "./parser.h"
 #include "./vote.h"
+#include "./voting-system.h"
 #include "./plurality-system.h"
 #include "./borda-system.h"
 #include "./irv-system.h"
@@ -16,14 +18,19 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::unordered_set;
+using std::unordered_map;
 using std::vector;
 using base::Clock;
 using base::Profiler;
 using bush::Parser;
 using bush::Vote;
+using bush::VotingSystem;
 using bush::Plurality;
 using bush::Borda;
 using bush::Irv;
+
+// Command-line flag for the strategy of the strategic vote calculation.
+DEFINE_string(strategy, "bush", "Voting strategy (bush, nixon, gandhi)");
 
 // Command-line flag for verbose output.
 DEFINE_bool(verbose, false, "Verbose output");
@@ -62,12 +69,19 @@ int main(int argc, char* argv[]) {
   Vote vote = parser.ParseVote();
 
   unordered_set<string> voting_systems({"plurality", "irv", "borda"});
+  unordered_map<string, VotingSystem::Strategy>
+    strategies({{"bush", VotingSystem::kSingle},
+                {"nixon", VotingSystem::kFull},
+                {"gandhi", VotingSystem::kMinimal}});
 
   if (selected_voter_id >= vote.num_voters()) {
     cout << "Invalid selected voter id " << selected_voter_id << ".\n";
     return 1;
   } else if (voting_systems.find(voting_system) == voting_systems.end()) {
     cout << "Invalid voting system " << voting_system << ".\n";
+    return 1;
+  } else if (strategies.find(FLAGS_strategy) == strategies.end()) {
+    cout << "Invalid voting strategy " << FLAGS_strategy << ".\n";
     return 1;
   }
 
@@ -80,9 +94,11 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  const VotingSystem::Strategy strategy = strategies[FLAGS_strategy];
   if (voting_system == "plurality") {
     // Plurality voting system.
-    Plurality system(vote, selected_voter_id);
+    Plurality system(vote, selected_voter_id, strategy);
+
     if (FLAGS_verbose) {
       cout << "Ratings: ";
       const vector<int>& ratings = system.base_ratings();
@@ -105,7 +121,7 @@ int main(int argc, char* argv[]) {
     }
   } else if (voting_system == "borda") {
     // Borda count voting system.
-    Borda system(vote, selected_voter_id);
+    Borda system(vote, selected_voter_id, strategy);
     if (FLAGS_verbose) {
       cout << "Ratings: ";
       const vector<int>& ratings = system.base_ratings();
@@ -128,7 +144,7 @@ int main(int argc, char* argv[]) {
     }
   } else if (voting_system == "irv") {
     // Instant-runoff voting system.
-    Irv system(vote, selected_voter_id);
+    Irv system(vote, selected_voter_id, strategy);
     const vector<int>& strategic_pref = system.strategic_preference();
     for (auto it = strategic_pref.cbegin(), end = strategic_pref.cend();
          it != end; ++it) {

@@ -1,5 +1,6 @@
 // Copyright 2012 Eugen Sawin <sawine@me73.com>
 #include "./plurality-system.h"
+#include <cassert>
 #include <vector>
 #include <algorithm>
 #include <queue>
@@ -21,19 +22,42 @@ struct Compare {
   }
 };
 
-Plurality::Plurality(const Vote& vote, const int selected_voter_id)
+Plurality::Plurality(const Vote& vote, const int selected_voter_id,
+                     const VotingSystem::Strategy strategy)
     : vote_(vote),
       selected_voter_(selected_voter_id),
       base_ratings_(vote.num_candidates(), 0) {
-  Preprocess();
+  Preprocess(strategy);
 }
 
-void Plurality::Preprocess() {
+void Plurality::Preprocess(const VotingSystem::Strategy strategy) {
+  if (strategy == VotingSystem::kSingle) {
+    strategic_preference_ = FindStrategicPreference(vote_, selected_voter_);
+  } else if (strategy == VotingSystem::kFull) {
+    const int num_voters = vote_.num_voters();
+    Vote strategic_vote(vote_.num_candidates(), num_voters);
+    strategic_vote.AddPreference(selected_voter_,
+                                 vote_.preference(selected_voter_));
+    for (int v = 0; v < num_voters; ++v) {
+      if (v == selected_voter_) {
+        continue;
+      }
+      strategic_vote.AddPreference(v, FindStrategicPreference(vote_, v));
+    }
+    strategic_preference_ = FindStrategicPreference(strategic_vote,
+                                                    selected_voter_);
+  } else {
+    strategic_preference_ = vote_.preference(selected_voter_);
+  }
+}
+
+vector<int> Plurality::FindStrategicPreference(const Vote& vote,
+                                               const int selected_voter) {
   typedef priority_queue<pair<int, int>, vector<pair<int, int> >,
                          Compare> Queue;
 
-  const int num_voters = vote_.num_voters();
-  const int num_candidates = vote_.num_candidates();
+  const int num_voters = vote.num_voters();
+  const int num_candidates = vote.num_candidates();
   // Vector of (rating, candidate id) pairs.
   vector<pair<int, int> > ratings;
   ratings.reserve(num_candidates);
@@ -41,19 +65,18 @@ void Plurality::Preprocess() {
     ratings.push_back(make_pair(0, c));
   }
   for (int v = 0; v < num_voters; ++v) {
-    if (v == selected_voter_) {
+    if (v == selected_voter) {
       // Ignore selected voter.
       continue;
     }
-    const vector<int>& pref = vote_.preference(v);
+    const vector<int>& pref = vote.preference(v);
     // Rate top ranked candidates only.
     const int candidate = pref[0];
     ++ratings[candidate].first;
-    ++base_ratings_[candidate];
   }
   sort(ratings.begin(), ratings.end(), Compare());
   const int max_rating = ratings.back().first;
-  const vector<int>& selected_voter_ratings = vote_.ratings(selected_voter_);
+  const vector<int>& selected_voter_ratings = vote.ratings(selected_voter);
   Queue queue;
   for (int i = 0; i < num_candidates; ++i) {
     const int rating = ratings[i].first;
@@ -64,11 +87,13 @@ void Plurality::Preprocess() {
                          candidate));
   }
 
-  strategic_preference_.reserve(num_candidates);
+  vector<int> strategic_preference;
+  strategic_preference.reserve(num_candidates);
   while (queue.size()) {
-    strategic_preference_.push_back(queue.top().second);
+    strategic_preference.push_back(queue.top().second);
     queue.pop();
   }
+  return strategic_preference;
 }
 
 const vector<int>& Plurality::base_ratings() const {
