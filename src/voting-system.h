@@ -6,7 +6,7 @@ namespace bush {
 
 class VotingSystem {
  public:
-  enum Strategy { kSingle, kFull, kMinimal };
+  enum Strategy { kSimple, kComplete, kIndependent };
 };
 }  // namespace bush
 #endif  // SRC_VOTING_SYSTEM_H_

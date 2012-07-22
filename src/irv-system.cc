@@ -1,6 +1,7 @@
 // Copyright 2012 Eugen Sawin <sawine@me73.com>
 #include "./irv-system.h"
 #include <cassert>
+#include <unordered_set>
 #include <vector>
 #include <algorithm>
 #include <queue>
@@ -11,6 +12,7 @@
 #include "./clock.h"
 
 using std::vector;
+using std::unordered_set;
 using std::pair;
 using std::make_pair;
 using std::sort;
@@ -31,6 +33,18 @@ struct Compare {
   }
 };
 
+struct IntVectorHash {
+  size_t operator()(const vector<int>& vec) const {
+    const int size = vec.size();
+    size_t h = size ^ 0x550924F3;
+    for (int i = 0; i < size; ++i) {
+      const int j = i * 3;
+      h ^= (vec[i] << j) ^ (h >> j);
+    }
+    return h;
+  }
+};
+
 const Clock::Diff Irv::kDefTimeLimit = 10 * Clock::kMicroInSec;
 
 Irv::Irv(const Vote& vote, const int selected_voter_id,
@@ -42,14 +56,14 @@ Irv::Irv(const Vote& vote, const int selected_voter_id,
 }
 
 void Irv::Preprocess(const VotingSystem::Strategy strategy) {
-  if (strategy == VotingSystem::kSingle) {
+  if (strategy == VotingSystem::kSimple) {
     strategic_preference_ = FindStrategicPreference(vote_, selected_voter_,
                                                     time_limit_);
-  } else if (strategy == VotingSystem::kFull) {
+  } else if (strategy == VotingSystem::kComplete) {
     const Clock beg;
 
     const int num_voters = vote_.num_voters();
-    const Clock::Diff voter_time = time_limit_ / (2 + num_voters);
+    const Clock::Diff voter_time = time_limit_ * 0.66f / num_voters;
     Vote strategic_vote(vote_.num_candidates(), num_voters);
     strategic_vote.AddPreference(selected_voter_,
                                  vote_.preference(selected_voter_));
@@ -74,6 +88,7 @@ vector<int> Irv::FindStrategicPreference(const Vote& vote,
                                          const Clock::Diff time_limit) {
   const Clock beg;
 
+  unordered_set<vector<int>, IntVectorHash> checked;
   RandomGenerator<float> random(12);
   const int num_candidates = vote.num_candidates();
   const int max_utility = num_candidates - 1;
@@ -81,10 +96,19 @@ vector<int> Irv::FindStrategicPreference(const Vote& vote,
   vector<int> strategic_preference = vote.preference(selected_voter);
   vector<int> preference = vote.preference(selected_voter);
   int best_utility = Utility(vote, selected_voter, preference);
-
-  while (best_utility < max_utility && Clock() - beg < time_limit) {
+  int checked_hits = 0;
+  const int max_checked_hits = num_candidates;
+  while (checked_hits < max_checked_hits &&
+         best_utility < max_utility &&
+         Clock() - beg < time_limit) {
     swap(preference[random.Next() * num_candidates],
          preference[random.Next() * num_candidates]);
+    if (checked.find(preference) != checked.end()) {
+      ++checked_hits;
+      continue;
+    }
+    checked_hits = 0;
+    checked.insert(preference);
     const int utility = Utility(vote, selected_voter, preference);
     if (utility > best_utility) {
       best_utility = utility;

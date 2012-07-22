@@ -70,9 +70,9 @@ int main(int argc, char* argv[]) {
 
   unordered_set<string> voting_systems({"plurality", "irv", "borda"});
   unordered_map<string, VotingSystem::Strategy>
-    strategies({{"bush", VotingSystem::kSingle},
-                {"nixon", VotingSystem::kFull},
-                {"gandhi", VotingSystem::kMinimal}});
+    strategies({{"bush", VotingSystem::kSimple},
+                {"nixon", VotingSystem::kComplete},
+                {"gandhi", VotingSystem::kIndependent}});
 
   if (selected_voter_id >= vote.num_voters()) {
     cout << "Invalid selected voter id " << selected_voter_id << ".\n";

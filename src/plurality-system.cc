@@ -31,9 +31,9 @@ Plurality::Plurality(const Vote& vote, const int selected_voter_id,
 }
 
 void Plurality::Preprocess(const VotingSystem::Strategy strategy) {
-  if (strategy == VotingSystem::kSingle) {
+  if (strategy == VotingSystem::kSimple) {
     strategic_preference_ = FindStrategicPreference(vote_, selected_voter_);
-  } else if (strategy == VotingSystem::kFull) {
+  } else if (strategy == VotingSystem::kComplete) {
     const int num_voters = vote_.num_voters();
     Vote strategic_vote(vote_.num_candidates(), num_voters);
     strategic_vote.AddPreference(selected_voter_,
