@@ -29,8 +29,17 @@ using bush::Plurality;
 using bush::Borda;
 using bush::Irv;
 
+#ifdef NIXON_STRATEGY_
+static const char* kDefStrategy = "nixon";
+#elif defined GANDHI_STRATEGY_
+static const char* kDefStrategy = "gandhi";
+#else
+static const char* kDefStrategy = "bush";
+#endif
+
 // Command-line flag for the strategy of the strategic vote calculation.
-DEFINE_string(strategy, "bush", "Voting strategy (bush, nixon, gandhi)");
+DEFINE_string(strategy, kDefStrategy, "Voting strategy (bush, nixon, gandhi)");
+
 
 // Command-line flag for verbose output.
 DEFINE_bool(verbose, false, "Verbose output");
@@ -39,7 +48,7 @@ DEFINE_bool(verbose, false, "Verbose output");
 DEFINE_bool(brief, true, "Brief output, outputs only the strategic preference");
 
 // Command-line flag for execution time limit.
-DEFINE_int32(timelimit, 300, "Execution time limit in seconds");
+DEFINE_int32(timelimit, 10, "Maximum execution time limit in seconds");
 
 // The command-line usage text.
 const string kUsage =  // NOLINT

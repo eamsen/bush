@@ -4,13 +4,16 @@
 
 #include <vector>
 #include "./voting-system.h"
+#include "./clock.h"
 
 namespace bush {
 
 class Vote;
 
-class Plurality {
+class Plurality : public VotingSystem {
  public:
+  static int Utility(const Vote& vote, const int selected_voter);
+
   Plurality(const Vote& vote, const int selected_voter_id,
             const VotingSystem::Strategy strategy);
   const std::vector<int>& base_ratings() const;
@@ -25,6 +28,7 @@ class Plurality {
   int selected_voter_;
   mutable std::vector<int> base_ratings_;
   std::vector<int> strategic_preference_;
+  base::Clock::Diff time_limit_;
 };
 
 }  // namespace bush

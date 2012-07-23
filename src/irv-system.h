@@ -12,8 +12,6 @@ class Vote;
 
 class Irv {
  public:
-  static const base::Clock::Diff kDefTimeLimit;
-
   Irv(const Vote& vote, const int selected_voter_id,
       const VotingSystem::Strategy strategy);
   const std::vector<int>& strategic_preference() const;

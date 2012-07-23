@@ -30,10 +30,28 @@ Building gflags
 Building Bush (depends on gflags)
 --------------------------------
   To build Bush use:
-  $ make
+  $ make  or  $ make bush
 
-  For performance tests use the more optimised version:
-  $ make opt
+  To build Nixon use:
+  $ make nixon
+
+  To build Gandhi use:
+  $ make gandhi
+
+  To build all of them at once use:
+  $ make all
+
+  Bush, Nixon and Gandhi are just different strategies of Bush.
+  Alternatively you can just build Bush and use the --strategy flag to switch
+  between the strategies on startup.
+
+
+Using Bush
+---------
+  $ bush <preferences.vote> <voter id> <voting system>
+
+  To show the full usage and flags help use:
+  $ bush -help
 
 
 Testing Bush (depends on gtest)
@@ -53,13 +71,3 @@ Checking style
   To test code style conformance with the Google C++ Style Guide
   (http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml) use:
   $ make checkstyle
-
-
-Using Bush
----------
-  $ bush <preferences.vote> <voter id> <voting system>
-
-  To show the full usage and flags help use:
-  $ bush -help
-
-  Do not like Bush? Bush is kind enough to make a copy of himself called vote.

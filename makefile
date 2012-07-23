@@ -6,7 +6,8 @@ OBJDIR:=bin/obj
 GFLAGSDIR:=libs/gflags-2.0/.libs
 GTESTLIBS:=-lgtest -gtest_main
 CXX:=g++ -std=c++0x -Ilibs/gflags-2.0/src
-CFLAGS:=-Wall -O3 -g
+STRATEGY:=-DBUSH_STRATEGY_
+CFLAGS:=-Wall -O3 -g $(STRATEGY)
 LIBS:=$(GFLAGSDIR)/libgflags.a -lpthread -lrt
 TSTFLAGS:=
 TSTLIBS:=$(GTESTLIBS) $(LIBS)
@@ -21,9 +22,25 @@ BINS:=$(addprefix $(BINDIR)/, $(BINS))
 TSTBINS:=$(addprefix $(BINDIR)/, $(TSTBINS))
 
 compile: makedirs $(BINS)
-	@echo copying bush as vote
-	@cp $(BINDIR)/bush $(BINDIR)/vote
 	@echo compiled all
+
+all:
+	@make nixon;
+	@make gandhi;
+	@make bush;
+
+bush: CFLAGS+=-DBUSH_STRATEGY_ 
+bush: compile
+
+nixon: CFLAGS+=-DNIXON_STRATEGY_ 
+nixon: compile
+	@echo moving bush to nixon
+	@mv $(BINDIR)/bush $(BINDIR)/nixon
+
+gandhi: CFLAGS+=-DGANDHI_STRATEGY_ 
+gandhi: compile
+	@echo moving bush to gandhi
+	@mv $(BINDIR)/bush $(BINDIR)/gandhi
 
 profile: CFLAGS=-Wall -O3 -DPROFILE
 profile: LIBS+=-lprofiler
@@ -34,18 +51,6 @@ opt: clean compile
 
 debug: CFLAGS=-O0 -g
 debug: compile
-
-ARGS:=-verbose=false -brief=false
-LOG:=perf-results.txt
-perftest: opt
-	@mkdir -p log; rm -f log/$(LOG);
-	@echo "test parameters: LOG=$(LOG) ARGS=$(ARGS)";
-	@for i in examples/*.vote;\
-		do echo "testing $$i";\
-		./bin/ash $(ARGS) $$i >> log/$(LOG);\
-		echo " " >> log/$(LOG);\
-	done
-	@echo "tested all (results in log/$(LOG))";
 
 depend: gflags
 
@@ -67,6 +72,9 @@ checkstyle:
 clean:
 	@rm -f $(OBJDIR)/*.o
 	@rm -f $(BINS)
+	@rm -f $(BINDIR)/bush
+	@rm -f $(BINDIR)/nixon
+	@rm -f $(BINDIR)/gandhi
 	@rm -f $(TSTBINS)
 	@echo cleaned
 

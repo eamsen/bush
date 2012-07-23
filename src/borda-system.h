@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "./voting-system.h"
+#include "./clock.h"
 
 namespace bush {
 
@@ -11,6 +12,8 @@ class Vote;
 
 class Borda {
  public:
+  static int Utility(const Vote& vote, const int selected_voter);
+
   Borda(const Vote& vote, const int selected_voter_id,
         const VotingSystem::Strategy strategy);
   const std::vector<int>& base_ratings() const;
@@ -24,6 +27,7 @@ class Borda {
   int selected_voter_;
   std::vector<int> base_ratings_;
   std::vector<int> strategic_preference_;
+  base::Clock::Diff time_limit_;
 };
 
 }  // namespace bush
