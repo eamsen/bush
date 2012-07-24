@@ -112,6 +112,7 @@ void Irv::Preprocess(const VotingSystem::Strategy strategy) {
       const int utility = Utility(vote_, selected_voter_, preference);
       auto find = pref_map.find(preference);
       if (find == pref_map.end()) {
+        checked_hits = 0;
         find = pref_map.insert(make_pair(preference, utility)).first;
       } else {
         ++checked_hits;
