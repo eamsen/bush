@@ -3,12 +3,14 @@ SRCDIR:=src
 TSTDIR:=src/test
 BINDIR:=bin
 OBJDIR:=bin/obj
-GFLAGSDIR:=libs/gflags-2.0/.libs
 GTESTLIBS:=-lgtest -gtest_main
+GFLAGSDIR:=deps/gflags-2.0
 CXX:=g++ -std=c++0x -Ilibs/gflags-2.0/src
+# CXX:=g++ -std=c++0x -I$(GFLAGSDIR)/src
 STRATEGY:=-DBUSH_STRATEGY_
 CFLAGS:=-Wall -O3 -g $(STRATEGY)
-LIBS:=$(GFLAGSDIR)/libgflags.a -lpthread -lrt
+LIBS:=-lgflags -lpthread -lrt
+# LIBS:=$(GFLAGSDIR)/.libs/libgflags.a -lpthread -lrt
 TSTFLAGS:=
 TSTLIBS:=$(GTESTLIBS) $(LIBS)
 BINS:=bush
@@ -22,7 +24,7 @@ BINS:=$(addprefix $(BINDIR)/, $(BINS))
 TSTBINS:=$(addprefix $(BINDIR)/, $(TSTBINS))
 
 compile: makedirs $(BINS)
-	@echo compiled all
+	@echo "compiled all"
 
 all:
 	@make nixon;
@@ -34,12 +36,12 @@ bush: compile
 
 nixon: CFLAGS+=-DNIXON_STRATEGY_ 
 nixon: compile
-	@echo moving bush to nixon
+	@echo "moving bush to nixon"
 	@mv $(BINDIR)/bush $(BINDIR)/nixon
 
 gandhi: CFLAGS+=-DGANDHI_STRATEGY_ 
 gandhi: compile
-	@echo moving bush to gandhi
+	@echo "moving bush to gandhi"
 	@mv $(BINDIR)/bush $(BINDIR)/gandhi
 
 profile: CFLAGS=-Wall -O3 -DPROFILE
@@ -52,21 +54,22 @@ opt: clean compile
 debug: CFLAGS=-O0 -g
 debug: compile
 
-depend: gflags
+depend: gflags cpplint
 
 makedirs:
 	@mkdir -p bin/obj
 
 gflags:
-	@cd libs/gflags-2.0/; ./configure; make;
-	@echo compiled gflags
+	@tar xf deps/gflags-2.0.tar.gz -C deps/;
+	@cd deps/gflags-2.0/; ./configure; make;
+	@echo "compiled gflags"
 
-test: makedirs $(TSTBINS)
+check: makedirs $(TSTBINS)
 	@for t in $(TSTBINS); do ./$$t; done
-	@echo completed tests
+	@echo "completed tests"
 
 checkstyle:
-	@python libs/cpplint/cpplint.py --filter=-readability/streams\
+	@python tools/cpplint/cpplint.py --filter=-readability/streams\
 		$(SRCDIR)/*.h $(SRCDIR)/*.cc
 
 clean:
@@ -79,7 +82,7 @@ clean:
 	@echo cleaned
 
 .PRECIOUS: $(OBJS) $(TSTOBJS)
-.PHONY: compile profile opt perftest depend makedirs gflags test\
+.PHONY: compile profile opt perftest depend makedirs gflags test cpplint\
 	checkstyle clean
 
 $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc
