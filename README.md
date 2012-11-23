@@ -34,15 +34,19 @@ Alternatively you can build all dependencies at once:
 
 ## Building Bush (depends on gflags)
 To build Bush use:
+
     $ make  or  $ make bush
 
 To build Nixon use:
+
     $ make nixon
 
 To build Gandhi use:
+
     $ make gandhi
 
 To build all of them at once use:
+
     $ make all
 
 Bush (the strategy), Nixon and Gandhi are just different strategies of Bush 
