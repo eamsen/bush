@@ -64,6 +64,17 @@ gflags:
 	@cd deps/gflags-2.0/; ./configure; make;
 	@echo "compiled gflags"
 
+cpplint: 
+	@if [ -f tools/cpplint/cpplint.py ];\
+	then\
+		echo "updating cpplint";\
+		cd tools/cpplint; git pull; cd ../..;\
+	else\
+		echo "cloning cpplint";\
+		mkdir tools && cd tools;\
+		git clone git@github.com:eamsen/cpplint.git; cd ..;\
+	fi
+
 check: makedirs $(TSTBINS)
 	@for t in $(TSTBINS); do ./$$t; done
 	@echo "completed tests"
